@@ -75,7 +75,7 @@ knitr::include_graphics(here::here("images", "coffee_bean.png"))
 >
 </iframe>
 
-Click [here](https://youtu.be/DW_Rmr2QsgQ) to watch demo on YouTube. 
+Click [here](https://youtu.be/DW_Rmr2QsgQ) to watch the demo on YouTube. 
 
 
 The Data
