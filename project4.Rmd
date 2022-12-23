@@ -48,7 +48,7 @@ This dashboard aims to help users explore coffee ratings by (1) coffee bean spec
 The data are from the [Coffee Quality Database](https://github.com/jldbc/coffee-quality-database) courtesy of Buzzfeed Data Scientist James LeDoux. The data directories are accessible via [TidyTuesday](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-07-07/readme.md). 
 
 **How is coffee rated?**
-Coffee is rated by cupping. "Coffee cupping is the practice of observing the tastes and aromas of brewed coffee. Coffee cupping involves deeply sniffing the coffee, then loudly slurping the coffee so it spreads to the back of the tongue. Cuppers rate various aspects of a coffee's taste including the body (the texture or mouth feel, such as oiliness), sweetness, acidity (a sharp and tangy feeling, like you get when you bite into citrus)l; flavor (the characters in the cup); and aftertaste. Interestingly, coffee bean taste varies by where it was grown, so cuppers may attempt to identify the coffee's origin location. Click [here](https://en.wikipedia.org/wiki/Coffee_cupping) to learn more!
+Coffee is rated by cupping. "Coffee cupping is the practice of tasting and smelling the nuances and aromas of brewed coffee. Coffee cupping involves deeply sniffing the coffee, then loudly slurping the coffee so it spreads to the back of the tongue. Cuppers rate various aspects of a coffee's taste including the body (the texture or mouth feel, such as oiliness), sweetness, acidity (a sharp and tangy feeling, like you get when you bite into citrus), flavor (the characters in the cup), and aftertaste. Interestingly, coffee bean taste varies by where it was grown, so cuppers may attempt to identify the coffee's origin location. Click [here](https://en.wikipedia.org/wiki/Coffee_cupping) to learn more!
 
 **What are common coffee bean species?**
 "The two most economically important varieties of coffee plant are the Arabica and the Robusta; ~60% of the coffee produced worldwide is Arabica and ~40% is Robusta. Arabica beans consist of 0.8–1.4% caffeine while Robusta beans consist of 1.7–4% caffeine." Click [here](https://en.wikipedia.org/wiki/Coffee_bean) to learn more!
@@ -68,7 +68,7 @@ knitr::include_graphics(here::here("images", "coffee_bean.png"))
 
 <iframe
     width="300"
-    src="https://www.youtube.com/embed/UmX4kyB2wfg"
+    src="https://www.youtube.com/embed/DW_Rmr2QsgQ"
     frameborder="0"
     allow="autoplay; encrypted-media"
     allowfullscreen
