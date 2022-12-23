@@ -15,6 +15,7 @@ library(shiny)
 library(here)
 library(tidyverse)
 library(lubridate)
+library(stringr)
 library(pheatmap)
 
 ```
@@ -59,7 +60,7 @@ Column {data-width=25}
 ###
 
 ```{r, echo=FALSE, fig.cap="[Image source](https://learn.bluecoffeebox.com/4-main-types-coffee-beans/)"}
-knitr::include_graphics(here::here("images", "coffee_bean.png"))
+knitr::include_graphics("https://learn.bluecoffeebox.com/wp-content/uploads/2018/09/coffee-beans-arabica-robusta.png")
 ```
 
 ###

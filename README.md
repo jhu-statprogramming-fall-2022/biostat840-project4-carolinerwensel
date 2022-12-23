@@ -5,4 +5,4 @@ This is a repository for biostat840, project 4
 
 Name: Caroline Wensel 
 
-Link to the deployed dashboard: 
+Link to the deployed dashboard: <https://carolinerwensel.shinyapps.io/project4/>
