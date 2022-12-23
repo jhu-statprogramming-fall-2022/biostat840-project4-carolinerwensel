@@ -1,0 +1,336 @@
+---
+title: "All Aboout Coffee Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    theme: readable
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(DT)
+library(shiny)
+library(here)
+library(tidyverse)
+library(lubridate)
+
+```
+
+```{r}
+# tests if a directory named "data" exists locally
+if(!dir.exists(here("data"))) { dir.create(here("data")) }
+
+# saves data only once (not each time you knit a R Markdown)
+if(!file.exists(here("data", "coffee_ratings.csv"))) {
+coffee_ratings <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-07-07/coffee_ratings.csv')
+write_csv(coffee_ratings, file = here("data", "coffee_ratings.csv"))
+}
+
+# read in the data locally each time you knit/render
+coffee_ratings <- read_csv(here("data", "coffee_ratings.csv"))
+```
+
+
+About
+===================================== 
+
+Column {data-width=45}
+-------------------------------------
+###
+
+**What is the purpose of this dashboard?**
+This dashboard aims to help users explore coffee ratings by (1) coffee bean species and (2) growing location. 
+
+**Where can I access the data?**
+The data are from the [Coffee Quality Database](https://github.com/jldbc/coffee-quality-database) courtesy of Buzzfeed Data Scientist James LeDoux. The data directories are accessible via [TidyTuesday](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-07-07/readme.md). 
+
+**How is coffee rated?**
+Coffee is rated by cupping. "Coffee cupping is the practice of observing the tastes and aromas of brewed coffee. Coffee cupping involves deeply sniffing the coffee, then loudly slurping the coffee so it spreads to the back of the tongue. Cuppers rate various aspects of a coffee's taste including the body (the texture or mouth feel, such as oiliness), sweetness, acidity (a sharp and tangy feeling, like you get when you bite into citrus)l; flavor (the characters in the cup); and aftertaste. Interestingly, coffee bean taste varies by where it was grown, so cuppers may attempt to identify the coffee's origin location. Click [here](https://en.wikipedia.org/wiki/Coffee_cupping) to learn more!
+
+**What are common coffee bean species?**
+"The two most economically important varieties of coffee plant are the Arabica and the Robusta; ~60% of the coffee produced worldwide is Arabica and ~40% is Robusta. Arabica beans consist of 0.8–1.4% caffeine while Robusta beans consist of 1.7–4% caffeine." Click [here](https://en.wikipedia.org/wiki/Coffee_bean) to learn more!
+
+
+Column {data-width=25}
+-------------------------------------
+###
+
+```{r, echo=FALSE, fig.cap="[Image source](https://learn.bluecoffeebox.com/4-main-types-coffee-beans/)"}
+knitr::include_graphics(here::here("images", "coffee_bean.png"))
+```
+
+###
+
+**Dashboard demo**
+Insert video here
+
+
+
+
+The Data
+===================================== 
+
+Column {data-width=70}
+-------------------------------------
+###
+
+The data used in this dashboard are from the [Coffee Quality Database](https://github.com/jldbc/coffee-quality-database) courtesy of Buzzfeed Data Scientist James LeDoux. The data directories are accessible via [TidyTuesday](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-07-07/readme.md). 
+
+These data contain reviews of 1312 arabica and 28 robusta coffee beans from the Coffee Quality Institute's trained reviewers and are further descirbed [here](https://github.com/jldbc/coffee-quality-database). 
+
+```{r, echo=FALSE}
+coffee_ratings$date <- coffee_ratings$grading_date %>%
+  mdy()
+coffee_ratings$year <- coffee_ratings$date %>%
+  year()
+
+coffee_ratings$country_of_origin <- coffee_ratings$country_of_origin %>%
+  str_replace_all("\\?", "\\'")
+
+
+# Create the DT table first
+DT_table <- coffee_ratings %>%
+  dplyr::select(c("date", 
+                "total_cup_points", 
+                "species",
+                "country_of_origin",
+                "aroma", "flavor", "aftertaste", "acidity", 
+                "body", "balance", "uniformity","sweetness")) %>%
+  rename(Date = date, 
+         "Total cup points" = total_cup_points,
+         "Country of origin" = country_of_origin, 
+         Species = species,
+         Aroma = aroma, 
+         Flavor = flavor, 
+         Aftertaste = aftertaste, 
+         Acidity = acidity, 
+         Body = body, 
+         Balance = balance, 
+         Uniformity = uniformity, 
+         Sweetness = sweetness) %>%
+  arrange(desc("Total cup points"))
+```
+
+```{r, echo=FALSE}
+DT::renderDataTable({
+  DT::datatable(DT_table,
+                caption = htmltools::tags$caption(
+                  style = 'caption-side: top; text-align: Left;',
+                  htmltools::withTags(
+                    div(HTML('<a href="https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-07-07/readme.md)">Click here to be redirected to a page where this data can be downloaded.</a>')))),
+                options = list(autoWidth = TRUE,
+                               pageLength = 10,
+                               scroller = TRUE,
+                               scrollY = '450px'))
+})
+```
+
+
+
+Species
+===================================== 
+
+Column {data-width=70}
+-------------------------------------
+###
+
+```{r}
+coffee_ratings %>%
+  group_by(species) %>%
+  ggplot(aes(species, total_cup_points)) +
+  geom_violin(aes(fill = species)) +
+  labs(
+    title = "Coffee ratings by bean species",
+    subtitle = "2010 - 2018", 
+    caption = "Arabica and robusta beans",
+    x = "Bean species", 
+    y = "Total cup points") +
+  labs(fill = "Bean species") +
+  theme_minimal() +
+  theme(legend.background=element_blank(), 
+        legend.key = element_blank())
+
+```
+
+
+
+Over time
+===================================== 
+
+Column {data-width=70 .tabset .tabset-fade}
+-------------------------------------
+
+### Total
+
+```{r}
+coffee_ratings %>%
+  ggplot(aes(date, total_cup_points)) +
+  geom_smooth(aes(color = species)) +
+  labs(
+    title = "Coffee ratings over time",
+    subtitle = "2010 - 2018", 
+    caption = "Arabica and robusta beans",
+    x = "Time (Years)", 
+    y = "Cup points") +
+  labs(color = "Bean species") +
+  theme_minimal() +
+  theme(legend.background=element_blank(), 
+        legend.key = element_blank())
+
+```
+
+### Arabica
+
+```{r}
+coffee_ratings %>%
+  filter(country_of_origin == "Mexico" | country_of_origin == "Guatemala" | country_of_origin =="Colombia" |
+         country_of_origin == "Brazil"| country_of_origin == "Taiwan") %>%
+  ggplot(aes(date, total_cup_points)) +
+  geom_point() +
+  labs(
+    title = "Arabica bean ratings for the top five countries of origin, over time",
+    subtitle = "2010 - 2018", 
+    caption = "The top five countires of origin only produce Arabica beans",
+    x = "Time (Years)", 
+    y = "Cup points") +
+  facet_wrap(vars(country_of_origin)) +
+  theme_minimal() +
+  theme(legend.background=element_blank(), 
+        legend.key = element_blank())
+
+```
+
+### Robusta
+
+```{r}
+coffee_ratings %>%
+  filter(species == "Robusta") %>%
+  ggplot(aes(date, total_cup_points)) +
+  geom_point() +
+  labs(
+    title = "Robusta bean ratings for the top five countries of origin, over time",
+    subtitle = "2010 - 2018", 
+    caption = "Only 5 counties produce robusta beans",
+    x = "Time (Years)", 
+    y = "Cup points") +
+  facet_wrap(vars(country_of_origin)) +
+  theme_minimal() +
+  theme(legend.background=element_blank(), 
+        legend.key = element_blank())
+
+```
+
+
+
+Attributes
+===================================== 
+
+Column {data-width=15}
+-------------------------------------
+###
+
+```{r}
+
+coffee_ratings_long <- coffee_ratings %>%
+  rename(Aroma = aroma, 
+         Flavor = flavor, 
+         Aftertaste = aftertaste, 
+         Acidity = acidity, 
+         Body = body, 
+         Balance = balance, 
+         Uniformity = uniformity, 
+         Sweetness = sweetness) %>%
+  pivot_longer(
+    cols = c("Aroma", "Flavor", "Aftertaste", "Acidity", "Body", "Balance", "Uniformity", "Sweetness"),
+    names_to = "rating_name", 
+    values_to = "rating_grade")
+```
+
+```{r}
+selectInput(inputId = "attribute_selected", 
+              label = "Select an attribute to explore:",
+            choices = coffee_ratings_long %>% 
+              pull(rating_name) %>% 
+              unique() %>%
+              sort(), selected = "Aroma")
+
+# selectInput("attribute", label = "Attribute:",
+#             choices = c("Aroma", "Flavor", "Aftertaste", "Acidity", "Body", "Balance", "Uniformity", "Sweetness"), selected = "Aroma")
+```
+
+Column {data-width=55}
+-------------------------------------
+###
+
+```{r}
+renderPlot({
+coffee_ratings_long %>%
+  filter(rating_grade > 2) %>%
+  filter(rating_name == input$attribute_selected) %>%
+  group_by(species) %>%
+  ggplot(aes(species, rating_grade)) +
+  geom_violin(aes(fill = species)) +
+  labs(
+    title = "Selected attribute by bean species",
+    subtitle = "2010 - 2018", 
+    caption = "Arabica and robusta beans",
+    x = "Bean species", 
+    y = "Rating grade (points)") +
+  labs(fill = "Bean species") +
+  theme_minimal() +
+  theme(legend.background=element_blank(), 
+        legend.key = element_blank())
+})
+```
+
+
+Top Countries
+===================================== 
+
+Column {data-width=15}
+-------------------------------------
+###
+
+```{r}
+selectInput("n_countries", label = "Number of countries:",
+            choices = c(5, 10, 15, 20, 25), selected = 5)
+
+```
+
+Column {data-width=55}
+-------------------------------------
+###
+
+```{r, echo=FALSE}
+renderPlot({
+  coffee_ratings %>%
+  group_by(country_of_origin) %>%
+  summarise(total_points = sum(total_cup_points))%>%
+  drop_na() %>%
+  arrange(desc(total_points)) %>%
+  slice(1:input$n_countries) %>%
+  mutate(country_order = fct_reorder(country_of_origin, total_points)) %>%
+  ggplot(aes(country_order, total_points)) +
+  geom_col() +
+  coord_flip()+
+  labs(
+    title = "Top coffee bean countries of origin",
+    subtitle = "2010 - 2018",
+    caption = "Arabica and robusta beans combined",
+    y = "Cup points",
+    x = "Country of origin") +
+  theme_minimal()
+})
+```
+
+
+
+Analysis
+===================================== 
+
+Column {data-width=70}
+-------------------------------------
+
+### 
