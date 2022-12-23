@@ -15,6 +15,7 @@ library(shiny)
 library(here)
 library(tidyverse)
 library(lubridate)
+library(pheatmap)
 
 ```
 
@@ -64,8 +65,15 @@ knitr::include_graphics(here::here("images", "coffee_bean.png"))
 ###
 
 **Dashboard demo**
-Insert video here
 
+<iframe
+    width="300"
+    src="https://www.youtube.com/embed/UmX4kyB2wfg"
+    frameborder="0"
+    allow="autoplay; encrypted-media"
+    allowfullscreen
+>
+</iframe>
 
 
 
@@ -119,7 +127,7 @@ DT::renderDataTable({
                 caption = htmltools::tags$caption(
                   style = 'caption-side: top; text-align: Left;',
                   htmltools::withTags(
-                    div(HTML('<a href="https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-07-07/readme.md)">Click here to be redirected to a page where this data can be downloaded.</a>')))),
+                    div(HTML('<a href="https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-07-07/readme.md">Click here to be redirected to a page where this data can be downloaded.</a>')))),
                 options = list(autoWidth = TRUE,
                                pageLength = 10,
                                scroller = TRUE,
@@ -330,7 +338,107 @@ renderPlot({
 Analysis
 ===================================== 
 
-Column {data-width=70}
+Column {data-width=30}
 -------------------------------------
 
 ### 
+
+```{r, echo=FALSE}
+coffee_ratings$date <- coffee_ratings$grading_date %>%
+  mdy()
+
+coffee_ratings %>%
+  ggplot(aes(date, total_cup_points)) +
+  geom_smooth(aes(color = species)) +
+  labs(
+    title = "Coffee bean ratings over time",
+    subtitle = "Arabica and robusta beans", 
+    caption = "2010 - 2018",
+    x = "Time (Years)", 
+    y = "Cup points") +
+  labs(color = "Bean species") +
+  theme_minimal() +
+  theme(legend.background=element_blank(), 
+        legend.key = element_blank())
+
+```
+
+###
+
+```{r}
+coffee_ratings_long %>%
+  filter(year >= 2012, year <= 2017, rating_grade > 2) %>%
+  group_by(species) %>%
+  ggplot(aes(species, rating_grade)) +
+  geom_violin(aes(fill = species)) +
+  facet_wrap(vars(rating_name)) +
+  labs(
+    title = "Coffee attributes by bean species",
+    subtitle = "Arabica and robusta beans", 
+    caption = "2012 - 2017",
+    x = "Bean species", 
+    y = "Rating grade (points)") +
+  labs(fill = "Bean species") +
+  theme_minimal() +
+  theme(legend.background=element_blank(), 
+        legend.key = element_blank())
+```
+
+
+
+Column {data-width=40}
+-------------------------------------
+
+### 
+
+```{r}
+coffee_ratings %>%
+  filter(year >= 2012, year <= 2017) %>%
+  group_by(country_of_origin) %>%
+  summarise(total_points = sum(total_cup_points))%>%
+  drop_na() %>%
+  arrange(desc(total_points)) %>%
+  slice(1:25) %>%
+  mutate(country_order = fct_reorder(country_of_origin, total_points)) %>%
+  ggplot(aes(country_order, total_points)) +
+  geom_col() +
+  coord_flip()+
+  labs(
+    title = "Top 25 coffee bean countries",
+    subtitle = "2012 - 2017",
+    caption = "Arabica and robusta beans combined",
+    y = "Cup points",
+    x = "Country") +
+  theme_minimal()
+```
+
+
+###
+
+```{r, echo=FALSE, fig.cap="What arabica coffee bean attributes have the highest and lowest ratings by country of origin? By performing a clustering  analysis, using the package pheatmap, we can see that overall sweetness and uniformity have the highest ratings compared to the other attributes."}
+
+coffee_heatmap <- coffee_ratings %>%
+  filter(species == "Arabica") %>%
+  select(c("country_of_origin", "aroma", "flavor", "aftertaste", "acidity", "body", "balance", "uniformity", "sweetness")) %>%
+  group_by(country_of_origin) %>%
+  summarise(aroma_rating = mean(aroma),
+            flavor_rating = mean(flavor),
+            aftertaste_rating = mean(aftertaste), 
+            acidity_rating = mean(acidity), 
+            body_rating = mean(body),
+            balance_rating = mean(balance), 
+            uniformity_rating = mean(uniformity), 
+            sweetness_rating = mean(sweetness)) %>%
+  drop_na()
+  
+
+names(coffee_heatmap) <- c("country_of_origin", "aroma", "flavor", "aftertaste", "acidity", "body", "balance", "uniformity", "sweetness")
+
+coffee_heatmap <- column_to_rownames(coffee_heatmap, var = "country_of_origin")
+
+pheatmap(coffee_heatmap)
+# pheatmap(coffee_heatmap, cluster_rows = F, cluster_cols = F)
+# pheatmap(coffee_heatmap, cluster_rows = T, cluster_cols = F)
+
+
+```
